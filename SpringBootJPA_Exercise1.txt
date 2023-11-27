@@ -1,0 +1,542 @@
+
+
+Dependencies
+-----------------------
+
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-thymeleaf</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-devtools</artifactId>
+			<scope>runtime</scope>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.mysql</groupId>
+			<artifactId>mysql-connector-j</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars</groupId>
+		    <artifactId>bootstrap</artifactId>
+		    <version>5.0.1</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.webjars</groupId>
+		    <artifactId>font-awesome</artifactId>
+		    <version>6.4.2</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.webjars</groupId>
+			<artifactId>webjars-locator-core</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+===============================
+
+templates
+	->fragments
+		->header.html
+		->footer.html
+
+	->employees
+		->index.html
+		->create.html
+
+============================
+header.html
+-----------
+<header th:fragment="header">
+	
+  <div class="container bg-secondary p-5 text-center text-white my-4">
+	  <h1> BootStrap, JQuery and Fragments </h1>
+  </div>
+  <div class="container p-2">
+  <nav class="navbar navbar-expand-md bg-dark navbar-dark p-2">
+    <a class="navbar-brand" th:href="@{/students/}">
+      Home
+    </a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#topNavbar">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="topNavbar">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" th:href="@{/students/create}">Create New</a>
+        </li>
+       
+      </ul>
+    </div>
+  </nav>
+   </div>
+   
+</header>	
+
+------------------
+footer.html
+
+<footer class="text-center bg-dark p-2 text-white mt-5">
+  Copyright © Northern City. 2023
+</footer>
+
+=======================================================
+
+
+application.properties
+
+
+spring.datasource.url=jdbc:mysql://localhost:3306/jpadb
+spring.datasource.username=root
+spring.datasource.password=Admin@123
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+
+=============================================================
+
+employees/ index.html
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+  <title> Northern City </title>
+
+  <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+  <link rel="stylesheet" type="text/css" th:href="@{/webjars/font-awesome/css/all.min.css}" />
+  <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+  <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</head>
+
+<body>
+<div class="container my-2 p-2">	
+  <div th:replace="./fragments/header :: header"></div>
+</div>
+
+<div class="container p-2">
+	<a th:href="@{/employees/create}" class="btn btn-primary"> Create New Employee </a>
+</div>
+<div class="container p-2">
+<table class="table table-striped">
+	<tr>
+		<td> Id  </td>
+		<td> Photo </td>
+		<td> Name </td>
+		<td> Address </td> 
+		<td> Actions </td>
+	</tr>
+	<tr th:each="emp:${employees}">
+		<td th:text="${emp.id}"></td>
+		<td><img th:src="${emp.getFullPath()}" style="width:100px;height:auto;"> </td>
+		<td th:text="${emp.name}"></td>
+		<td th:text="${emp.position}"></td>
+		<td>
+			<a href="#" class="btn btn-warning"> <i class="fa fa-pencil"></i> Edit </a> | 
+			<a href="#" th:studentRec="${emp.name}" class="btn btn-danger btn-delete"
+    title="Delete this Record" data-bs-toggle="modal" data-bs-target="#confirmModal"><i class="fa fa-trash"></i>  Delete </a>
+		</td>
+	</tr>
+</table>
+</div>
+<div class="container my-2">	
+ <div th:replace="./fragments/footer :: footer"></div>
+ </div>
+ 
+ <!-- modal -->
+ 
+ <div class="modal fade text-center" id="confirmModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Delete Confirmation</h5>
+        <button type="button" class="close" data-bs-dismiss="modal">
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <span id="confirmText"></span>
+      </div>
+
+      <div class="modal-footer">
+        <a type="button" id="yesBtn" class="btn btn-danger">Yes</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+      </div>
+    </div>
+  </div>
+ 
+ 
+ <script type="text/javascript">
+  $(document).ready(function () {
+    $(".btn-delete").on("click", function (e) {
+      e.preventDefault();
+      link = $(this);
+
+	  console.log(link);
+	  
+      studentRec = link.attr("studentRec");
+       console.log(studentRec);
+      $("#yesBtn").attr("href", link.attr("href"));
+      $("#confirmText").html("Do you want to delete the Student Record \<strong\>" + studentRec+ "\<\/strong\>?");
+      $("#confirmModal").modal();
+    });
+  });
+</script>
+</body>
+</html>
+===========================
+
+employees/create.html
+
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0" />
+  <title> Northern City </title>
+
+  <link rel="stylesheet" type="text/css" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" />
+    <link rel="stylesheet" type="text/css" th:href="@{/webjars/font-awesome/css/all.min.css}" />
+  <script type="text/javascript" th:src="@{/webjars/jquery/jquery.min.js}"></script>
+  <script type="text/javascript" th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+</head>
+
+<body>
+<div class="container my-2 p-2">	
+  <div th:replace="./fragments/header :: header"></div>
+</div>
+
+<div class="container my-2 p-2">
+	<div class="row"> 
+		<div class="col-lg-6 p-5">
+<form th:action="@{/employees/submit}" method="post" th:object="${employee}" enctype="multipart/form-data"> 
+<table class="table table-striped">
+	
+	<tr>
+		<td> Enter Employee Name  </td>
+		<td> <input type="text" th:field="*{name}" class="form-control"> </td>
+		<td th:if="${#fields.hasErrors('name')}" th:errors="*{name}">Id Error</td>
+		
+	</tr>
+	<tr>
+		<td> Enter Employee Position  </td>
+		<td> <input type="text" th:field="*{position}" class="form-control"> </td>
+		<td th:if="${#fields.hasErrors('position')}" th:errors="*{position}">Id Error</td>
+		
+	</tr>
+	<tr>
+		<td> Enter Employee Photo  </td>
+		<td> <input type="file" name="photo" class="form-control"> </td>
+		<td th:if="${#fields.hasErrors('photo_name')}" th:errors="*{photo_name}">Id Error</td>
+		
+	</tr>
+	<tr>
+		<td>   </td>
+		<td> <button type="submit" class="btn btn-outline-warning form-control"> Save </button> </td>
+		
+	</tr>
+	
+</table>
+
+</form>
+
+    </div>
+    <div class="col-lg-6 p-5 text-center"> 
+		<i class="fa-solid fa-user-circle" style="font-size:100px;color:black;"></i>
+	</div>
+</div>
+</div>
+</body>
+</html>
+
+================================
+
+
+Java Files
+
+-> Employee.java
+-> EmployeeController.java
+-> EmployeeRepository.java
+-> ResourceConfig.java
+
+
+------------------
+
+Employee.java
+
+
+package com.example.demo;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Transient;
+
+@Entity(name="employees")
+public class Employee {
+	
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private int id;
+	
+	private String name;
+	private String position;
+	private String photo_name;
+	private String photo_path;
+	public int getId() {
+		return id;
+	}
+	public void setId(int id) {
+		this.id = id;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getPosition() {
+		return position;
+	}
+	public void setPosition(String position) {
+		this.position = position;
+	}
+	public String getPhoto_name() {
+		return photo_name;
+	}
+	public void setPhoto_name(String photo_name) {
+		this.photo_name = photo_name;
+	}
+	public String getPhoto_path() {
+		return photo_path;
+	}
+	public void setPhoto_path(String photo_path) {
+		this.photo_path = photo_path;
+	}
+	public Employee(int id, String name, String position, String photo_name, String photo_path) {
+		super();
+		this.id = id;
+		this.name = name;
+		this.position = position;
+		this.photo_name = photo_name;
+		this.photo_path = photo_path;
+	}
+	public Employee() {
+		super();
+	}
+	
+	@Transient
+	public String getFullPath() {
+		if(photo_name.equals("none")) return null;
+		return "../"+getPhoto_path()+"/"+getPhoto_name();
+		
+	}
+	
+
+}
+
+
+=======================
+
+EmployeeController.java
+
+
+package com.example.demo;
+
+import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.validation.Valid;
+
+@Controller
+@RequestMapping("/employees")
+public class EmployeeController {
+	
+	
+	
+	@Autowired
+	EmployeeRepository employeeRepo;
+	
+	@GetMapping("/")
+	public String indexPage(Model model) {
+		
+		model.addAttribute("employees",employeeRepo.findAll());
+		
+		return "employees/index";
+		
+		
+	}
+	
+	@GetMapping("/create")
+	public String createPage(Model model) {
+		
+		model.addAttribute("employee",new Employee());
+		
+		return "employees/create";
+		
+		
+	}
+	
+	@PostMapping("/submit")
+	public String submitData(@Valid @ModelAttribute("employee") Employee emp,Model model,@RequestParam("photo") MultipartFile photo,BindingResult bindingResult) {
+		
+		if(bindingResult.hasErrors()) {
+			return "employees/create";
+		}
+		
+		
+		String photo_name=photo.getOriginalFilename();
+		if(photo_name.equals("")) {
+			emp.setPhoto_name("none");
+		}
+		else {
+		emp.setPhoto_name(photo_name);
+		Employee employee=employeeRepo.save(emp);
+		
+		String dirName = "./uploads/"+employee.getId();
+	    Path dirPath = Paths.get(dirName);
+	    if (!Files.exists(dirPath)) {
+			      try {
+					Files.createDirectory(dirPath);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	    }
+	    
+	    //saving file data into uploads folder
+	    
+	    try {
+	        Files.copy(photo.getInputStream(), dirPath.resolve(photo.getOriginalFilename()));
+	      } catch (Exception e) {
+	        if (e instanceof FileAlreadyExistsException) {
+	          throw new RuntimeException("A file of that name already exists.");
+	        }
+
+	        throw new RuntimeException(e.getMessage());
+	      }
+	    
+	    String photo_path=dirName;
+	    emp.setPhoto_path(photo_path);
+		}
+	    
+	    //update employee
+		employeeRepo.save(emp);
+		
+		return "redirect:./";
+		
+		
+	}
+	
+	
+
+}
+
+
+=============================
+
+EmployeeRepository.java ( Interface )
+
+package com.example.demo;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface EmployeeRepository extends JpaRepository<Employee,Long> {
+
+}
+
+===========================
+
+ResourceConfig.java
+
+-------------------
+
+
+package com.example.demo;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+@Configuration
+public class ResourceConfig implements WebMvcConfigurer {
+	
+     @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    	// TODO Auto-generated method stub
+    	 String dirName="uploads";
+    	exposeDirectory(dirName,registry);
+    }
+
+	private void exposeDirectory(String dirName, ResourceHandlerRegistry registry) {
+		// TODO Auto-generated method stub
+		Path uploadDir=Paths.get(dirName);
+		String uploadPath=uploadDir.toFile().getAbsolutePath();
+		if(dirName.startsWith("./")) dirName=dirName.replace("./","../");
+		registry.addResourceHandler("/"+dirName+"/**").addResourceLocations("file:/"+uploadPath+"/");
+		
+	}
+}
+
+
+=======================================
+
+
+
+
+
+
+
+
